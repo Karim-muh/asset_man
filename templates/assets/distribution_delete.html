@@ -1,0 +1,92 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Delete Distribution | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2>
+            <i class="bi bi-trash3 me-2 text-danger"></i>
+            Delete Distribution
+        </h2>
+        <p class="text-muted">Confirm the distribution record you want to delete.</p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+       
+
+        <div class="card-body">
+
+            <p>Are you sure you want to delete this distribution record?</p>
+
+            <table class="table table-bordered">
+
+                <tr>
+                    <th>Asset</th>
+                    <td>
+                        {{ distribution.asset.asset_tag }} -
+                        {{ distribution.asset.asset_name }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Employee</th>
+                    <td>
+                        {{ distribution.employee.first_name }}
+                        {{ distribution.employee.last_name }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Date Issued</th>
+                    <td>{{ distribution.date_issued }}</td>
+                </tr>
+
+                <tr>
+                    <th>Expected Return</th>
+                    <td>{{ distribution.expected_return_date|default:"Not specified" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Actual Return</th>
+                    <td>{{ distribution.actual_return_date|default:"Not returned" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Condition</th>
+                    <td>{{ distribution.condition_on_issue }}</td>
+                </tr>
+
+            </table>
+
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                This action cannot be undone.
+            </div>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash3 me-1"></i>
+                    Confirm Delete
+                </button>
+
+                <a href="{% url 'distribution_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

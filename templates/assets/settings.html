@@ -1,0 +1,117 @@
+ 
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}System Settings | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3><i class="bi bi-gear-fill me-2"></i>System Settings</h3>
+            <p class="text-muted mb-0">Manage and view your system configuration.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- General Settings -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-primary">
+                        <i class="bi bi-building fs-1"></i>
+                    </div>
+                    <h5>Organization Settings</h5>
+                    <p class="text-muted">Manage organization information, departments and contact details.</p>
+                    <a href="{% url 'department_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Manage Departments
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Settings -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-success">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                    <h5>User Management</h5>
+                    <p class="text-muted">View registered system users and manage their accounts.</p>
+                    <a href="{% url 'user_list' %}" class="btn btn-outline-success">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Settings -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-info">
+                        <i class="bi bi-person-badge fs-1"></i>
+                    </div>
+                    <h5>Employee Records</h5>
+                    <p class="text-muted">Access employee information and departmental assignments.</p>
+                    <a href="{% url 'employee_list' %}" class="btn btn-outline-info">
+                        <i class="bi bi-arrow-right-circle me-1"></i> View Employees
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Settings -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-box-seam fs-1"></i>
+                    </div>
+                    <h5>Asset Management</h5>
+                    <p class="text-muted">Access the asset register and manage recorded assets.</p>
+                    <a href="{% url 'asset_list' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Manage Assets
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-danger">
+                        <i class="bi bi-bar-chart-line fs-1"></i>
+                    </div>
+                    <h5>Reports</h5>
+                    <p class="text-muted">View asset reports and system summaries.</p>
+                    <a href="{% url 'report_list' %}" class="btn btn-outline-danger">
+                        <i class="bi bi-arrow-right-circle me-1"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="mb-3 text-secondary">
+                        <i class="bi bi-info-circle fs-1"></i>
+                    </div>
+                    <h5>System Information</h5>
+                    <p class="text-muted">Asset Management System running on Django.</p>
+                    <span class="badge bg-success">System Active</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

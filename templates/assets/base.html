@@ -1,0 +1,54 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Asset Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="logo">
+            <h2>Asset Management System</h2>
+        </div>
+
+        <nav class="main-nav">
+            {% block navigation %}
+            {% endblock %}
+        </nav>
+    </header>
+
+    <!-- Notification Messages -->
+    <section class="notifications">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    <!-- Main Page Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Asset Management System. All Rights Reserved @muhsin.</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

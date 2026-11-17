@@ -1,0 +1,130 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Disposal Management | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-recycle me-2"></i>
+                Disposal Management
+            </h2>
+            <p class="text-muted">Manage assets that have been disposed of.</p>
+        </div>
+
+        <a href="{% url 'disposal_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Register Disposal
+        </a>
+    </div>
+
+    <div class="mb-3">
+        <span class="badge bg-primary fs-6">
+            <i class="bi bi-archive me-1"></i>
+            {{ disposals|length }} Disposal Records
+        </span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>
+                Disposal Records
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Asset</th>
+                            <th>Date Disposed</th>
+                            <th>Method</th>
+                            <th>Approved By</th>
+                            <th>Disposal Value</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for disposal in disposals %}
+
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>
+                                <strong>{{ disposal.asset.asset_tag }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ disposal.asset.asset_name }}
+                                </small>
+                            </td>
+
+                            <td>{{ disposal.date_disposed }}</td>
+
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    {{ disposal.method }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <i class="bi bi-person-check me-1"></i>
+                                {{ disposal.approved_by.first_name }}
+                                {{ disposal.approved_by.last_name }}
+                            </td>
+
+                            <td>{{ disposal.disposal_value }}</td>
+
+                            <td>{{ disposal.reason|truncatewords:8 }}</td>
+
+                            <td>
+                                <a href="{% url 'disposal_edit' disposal.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+
+                                <a href="{% url 'disposal_delete' disposal.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash3"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-recycle display-5 text-muted"></i>
+                                <p class="mt-2 mb-0">
+                                    No disposal records found.
+                                </p>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Asset Distribution | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-box-arrow-up-right me-2"></i>
+                Asset Distribution
+            </h2>
+            <p class="text-muted">Manage assets issued to employees.</p>
+        </div>
+
+        <a href="{% url 'distribution_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Issue Asset
+        </a>
+    </div>
+
+    <div class="mb-3">
+        <span class="badge bg-primary fs-6">
+            <i class="bi bi-boxes me-1"></i>
+            {{ distributions|length }} Distribution Records
+        </span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>
+                Distribution Records
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Asset</th>
+                            <th>Employee</th>
+                            <th>Date Issued</th>
+                            <th>Expected Return</th>
+                            <th>Actual Return</th>
+                            <th>Condition</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for distribution in distributions %}
+
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>
+                                <strong>{{ distribution.asset.asset_tag }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ distribution.asset.asset_name }}
+                                </small>
+                            </td>
+
+                            <td>
+                                <i class="bi bi-person-circle me-1"></i>
+                                {{ distribution.employee.first_name }}
+                                {{ distribution.employee.last_name }}
+                            </td>
+
+                            <td>{{ distribution.date_issued }}</td>
+
+                            <td>
+                                {{ distribution.expected_return_date|default:"Not specified" }}
+                            </td>
+
+                            <td>
+                                {{ distribution.actual_return_date|default:"Not returned" }}
+                            </td>
+
+                            <td>{{ distribution.condition_on_issue }}</td>
+
+                            <td>
+                                <a href="{% url 'distribution_edit' distribution.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+
+                                <a href="{% url 'distribution_delete' distribution.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash3"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-box display-5 text-muted"></i>
+                                <p class="mt-2 mb-0">
+                                    No asset distribution records found.
+                                </p>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

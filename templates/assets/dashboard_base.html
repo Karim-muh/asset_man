@@ -1,0 +1,191 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Asset Management System{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Custom Dashboard CSS -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<div class="app-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div>
+                <h5>Asset Manager</h5>
+                <small>Management System</small>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+
+            <p class="menu-heading">MAIN MENU</p>
+
+            <a href="{% url 'dashboard' %}" class="menu-link">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+
+           
+
+            <p class="menu-heading">ASSET MANAGEMENT</p>
+
+            <a href="{% url 'asset_list' %}" class="menu-link">
+                <i class="bi bi-box-seam"></i>
+                <span>Assets</span>
+            </a>
+
+            <a href="{% url 'employee_list' %}" class="menu-link">
+                <i class="bi bi-people"></i>
+                <span>Employees</span>
+            </a>
+
+            <a href="{% url 'department_list' %}" class="menu-link">
+                <i class="bi bi-building"></i>
+                <span>Departments</span>
+            </a>
+
+            <a href="{% url 'requisition_list' %}" class="menu-link">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Requisitions</span>
+            </a>
+
+            <a href="{% url 'distribution_list' %}" class="menu-link">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Distributions</span>
+            </a>
+
+            <a href="{% url 'disposal_list' %}" class="menu-link">
+                <i class="bi bi-trash3"></i>
+                <span>Disposals</span>
+            </a>
+
+            <p class="menu-heading">SYSTEM</p>
+
+            <a href="{% url 'user_list' %}" class="menu-link">
+                <i class="bi bi-person-gear"></i>
+                <span>User Management</span>
+            </a>
+
+            <a href="{% url 'report_list' %}" class="menu-link">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Reports</span>
+            </a>
+
+            <!-- Settings: Administrator Only -->
+            {% if request.user.is_authenticated %}
+                {% if request.user.profile.role == 'ADMIN' %}
+                    <a href="{% url 'settings' %}" class="menu-link">
+                        <i class="bi bi-gear"></i>
+                        <span>Settings</span>
+                    </a>
+                {% endif %}
+            {% endif %}
+
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-area">
+
+        <!-- Top Navigation -->
+        <header class="topbar">
+
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <div class="topbar-search">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Search assets, employees...">
+            </div>
+
+            <div class="topbar-actions">
+
+                <button class="notification-btn">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="user-details">
+                        <strong>{{ request.user.username }}</strong>
+                        <small>System User</small>
+                    </div>
+                </div>
+                
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </button>
+    </form>
+
+            </div>
+
+        </header>
+
+        <!-- Page Content -->
+        <main class="content-area">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2026 Asset Management System. All Rights Reserved.</p>
+        </footer>
+
+    </div>
+
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom Dashboard JavaScript -->
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

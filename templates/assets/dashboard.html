@@ -1,0 +1,164 @@
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Dashboard | Asset Management System{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADING -->
+<div class="page-heading">
+    <h2>Dashboard Overview</h2>
+    <p>Welcome to your Asset Management System.</p>
+</div>
+
+<!-- STATISTICS -->
+<div class="row g-4 mb-4">
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <h6>Total Assets</h6>
+                <h3>{{ total_assets|default:"0" }}</h3>
+            </div>
+            <div class="stat-icon icon-blue">
+                <i class="bi bi-box-seam"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <h6>Available Assets</h6>
+                <h3>{{ available_assets|default:"0" }}</h3>
+            </div>
+            <div class="stat-icon icon-green">
+                <i class="bi bi-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <h6>Assigned Assets</h6>
+                <h3>{{ assigned_assets|default:"0" }}</h3>
+            </div>
+            <div class="stat-icon icon-orange">
+                <i class="bi bi-person-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <h6>Total Employees</h6>
+                <h3>{{ total_employees|default:"0" }}</h3>
+            </div>
+            <div class="stat-icon icon-purple">
+                <i class="bi bi-people"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- RECENT ASSETS -->
+<div class="content-card">
+
+    <div class="card-heading">
+        <div>
+            <h5>Recently Added Assets</h5>
+            <small class="text-muted">Latest registered assets in the system</small>
+        </div>
+
+        <a href="{% url 'asset_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Add Asset
+        </a>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="custom-table">
+
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Asset Name</th>
+                    <th>Asset Code</th>
+                    <th>Category</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <td>{{ forloop.counter }}</td>
+
+                {% for asset in recent_assets %}
+                <tr>
+                    <td>{{asset.id  }}</td>
+                    <td>{{ asset.asset_name }}</td>
+                    <td>{{ asset.asset_tag }}</td>
+                    <td>{{ asset.category }}</td>
+                    <td>{{ asset.department }}</td>
+
+                    <td>
+                        {% if asset.status == 'Available' %}
+                            <span class="status-badge status-available">
+                                {{ asset.status }}
+                            </span>
+                        {% elif asset.status == 'Assigned' %}
+                            <span class="status-badge status-assigned">
+                                {{ asset.status }}
+                            </span>
+                        {% elif asset.status == 'Under Maintenance' %}
+                            <span class="status-badge status-maintenance pending">
+                                {{ asset.status }}
+                            </span>
+                        {% elif asset.status == 'Disposed' %}
+                            <span class="status-badge status-disposed">
+                                {{ asset.status }}
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unknown">
+                                {{ asset.status }}
+                            </span>
+                        {% endif %}
+                       
+                    </td>
+
+                   <td>
+                        <a href="{% url 'asset_edit' asset.id %}"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil-square"></i>Edit
+                        </a>
+
+                        <a href="{% url 'asset_delete' asset.id %}"
+                            class="btn btn-sm btn-outline-danger"
+                            title="Delete">
+                            <i class="bi bi-trash3"></i>Delete
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        No assets have been registered yet.
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

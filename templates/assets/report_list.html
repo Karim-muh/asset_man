@@ -1,0 +1,377 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Reports | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                System Reports
+            </h2>
+
+            <p class="text-muted mb-0">
+                Generate and review asset management reports.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- Compact Summary -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded bg-primary bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-box-seam fs-3 text-primary"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-muted mb-1">Total Assets</p>
+                        <h4 class="fw-bold mb-0">{{ total_assets }}</h4>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded bg-success bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-people fs-3 text-success"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-muted mb-1">Total Employees</p>
+                        <h4 class="fw-bold mb-0">{{ total_employees }}</h4>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded bg-danger bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-recycle fs-3 text-danger"></i>
+                    </div>
+
+                    <div>
+                        <p class="text-muted mb-1">Total Disposals</p>
+                        <h4 class="fw-bold mb-0">{{ total_disposals }}</h4>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Asset Report Filters -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-funnel me-2 text-primary"></i>
+                Generate Asset Report
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Asset Status</label>
+
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}"
+                                    {% if selected_status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Asset Category</label>
+
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+
+                            {% for value, label in category_choices %}
+                                <option value="{{ value }}"
+                                    {% if selected_category == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Department</label>
+
+                        <select name="department" class="form-select">
+                            <option value="">All Departments</option>
+
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}"
+                                    {% if selected_department == dept.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Start Date</label>
+
+                        <input type="date"
+                               name="start_date"
+                               class="form-control"
+                               value="{{ start_date }}">
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">End Date</label>
+
+                        <input type="date"
+                               name="end_date"
+                               class="form-control"
+                               value="{{ end_date }}">
+                    </div>
+
+
+                    <div class="col-md-9 d-flex align-items-end gap-2 flex-wrap">
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>
+                            Generate Report
+                        </button>
+
+                        <a href="{% url 'report_list' %}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Reset
+                        </a>
+
+                        <button type="button"
+                                onclick="window.print()"
+                                class="btn btn-outline-success">
+                            <i class="bi bi-printer me-1"></i>
+                            Print
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- Filtered Asset Report -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2 text-primary"></i>
+                Asset Report Results
+            </h5>
+
+            <span class="badge bg-primary">
+                {{ filtered_count }} Records
+            </span>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset Tag</th>
+                            <th>Asset Name</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Acquisition Date</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                            <th>Delete</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for asset in filtered_assets %}
+
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold">{{ asset.asset_tag }}</td>
+                            <td>{{ asset.asset_name }}</td>
+                            <td>{{ asset.category }}</td>
+                            <td>{{ asset.department.name }}</td>
+                            <td>{{ asset.acquisition_date|date:"d M Y" }}</td>
+                            <td>{{ asset.acquisition_cost }}</td>
+                            <td>
+                                {% if asset.status == 'Available' %}
+                                    <span class="badge bg-success">Available</span>
+
+                                {% elif asset.status == 'Assigned' %}
+                                    <span class="badge bg-primary">Assigned</span>
+
+                                {% elif asset.status == 'Disposed' %}
+                                    <span class="badge bg-danger">Disposed</span>
+
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        {{ asset.status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'asset_delete' asset.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+
+                                <i class="bi bi-inbox display-5 text-muted"></i>
+
+                                <p class="text-muted mt-2 mb-0">
+                                    No assets match the selected filters.
+                                </p>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Recent Disposal Records -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white py-3">
+
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-clock-history me-2 text-primary"></i>
+                Recent Disposal Records
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Asset Tag</th>
+                            <th>Asset Name</th>
+                            <th>Disposal Date</th>
+                            <th>Method</th>
+                            <th>Disposal Value</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for disposal in recent_disposals %}
+
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold">
+                                {{ disposal.asset.asset_tag }}
+                            </td>
+                            <td>{{ disposal.asset.asset_name }}</td>
+                            <td>{{ disposal.date_disposed|date:"d M Y" }}</td>
+                            <td>{{ disposal.method }}</td>
+                            <td>{{ disposal.disposal_value }}</td>
+                            <td>
+                                <a href="{% url 'disposal_delete' disposal.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </td>   
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+
+                                <i class="bi bi-inbox display-5 text-muted"></i>
+
+                                <p class="text-muted mt-2 mb-0">
+                                    No disposal records available.
+                                </p>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

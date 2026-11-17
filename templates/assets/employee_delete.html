@@ -1,0 +1,100 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Delete Employee | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2>
+            <i class="bi bi-trash3 me-2 text-danger"></i>
+            Delete Employee
+        </h2>
+
+        <p class="text-muted">
+            Confirm the employee you want to delete.
+        </p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-danger text-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Confirm Deletion
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <p>
+                Are you sure you want to delete this employee?
+            </p>
+
+            <table class="table table-bordered">
+
+                <tr>
+                    <th>Employee Number</th>
+                    <td>{{ employee.employee_number }}</td>
+                </tr>
+
+                <tr>
+                    <th>Full Name</th>
+                    <td>
+                        {{ employee.first_name }}
+                        {{ employee.last_name }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Email</th>
+                    <td>{{ employee.email }}</td>
+                </tr>
+
+                <tr>
+                    <th>Phone</th>
+                    <td>{{ employee.phone }}</td>
+                </tr>
+
+                <tr>
+                    <th>Job Title</th>
+                    <td>{{ employee.job_title }}</td>
+                </tr>
+
+                <tr>
+                    <th>Department</th>
+                    <td>{{ employee.department.name }}</td>
+                </tr>
+
+            </table>
+
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                This action cannot be undone. Employees linked to
+                requisitions, distributions or disposals cannot be deleted.
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash3 me-1"></i>
+                    Confirm Delete
+                </button>
+
+                <a href="{% url 'employee_list' %}"
+                   class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+
+{% extends 'assets/dashboard_base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ page_title }} | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2>
+            <i class="bi bi-person-badge me-2"></i>
+            {{ page_title }}
+        </h2>
+
+        <p class="text-muted">
+            Enter the employee details below.
+        </p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>
+                Employee Information
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                {{ form|crispy }}
+
+                <div class="mt-4">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>
+                        Save Employee
+                    </button>
+
+                    <a href="{% url 'employee_list' %}"
+                       class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

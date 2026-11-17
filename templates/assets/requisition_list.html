@@ -1,0 +1,127 @@
+
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Requisition Management | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-clipboard-check me-2"></i>
+                Requisition Management
+            </h2>
+            <p class="text-muted">View and manage employee asset requests.</p>
+        </div>
+
+        <a href="{% url 'requisition_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Create Requisition
+        </a>
+    </div>
+
+    <div class="mb-3">
+        <span class="badge bg-primary fs-6">
+            <i class="bi bi-clipboard-data me-1"></i>
+            {{ requisitions|length }} Requisitions
+        </span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>
+                Requisition Records
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id </th>
+                            <th>Requisition Number</th>
+                            <th>Employee</th>
+                            <th>Asset Category</th>
+                            <th>Quantity</th>
+                            <th>Date Requested</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for requisition in requisitions %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>
+                                <strong>{{ requisition.requisition_number }}</strong>
+                            </td>
+
+                            <td>
+                                <i class="bi bi-person-circle me-1"></i>
+                                {{ requisition.employee.first_name }}
+                                {{ requisition.employee.last_name }}
+                            </td>
+
+                            <td>{{ requisition.asset_category }}</td>
+
+                            <td>{{ requisition.quantity }}</td>
+
+                            <td>{{ requisition.date_requested }}</td>
+
+                            <td>
+                                {% if requisition.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif requisition.status == 'Approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif requisition.status == 'Rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Fulfilled</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <a href="{% url 'requisition_edit' requisition.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+
+                                <a href="{% url 'requisition_delete' requisition.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash3"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="bi bi-clipboard-x display-5 text-muted"></i>
+                                <p class="mt-2 mb-0">
+                                    No requisitions have been created yet.
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

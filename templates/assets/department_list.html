@@ -1,0 +1,120 @@
+{% extends 'assets/dashboard_base.html' %}
+
+{% block title %}Department Management | Asset Management System{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-building me-2"></i>
+                Department Management
+            </h2>
+            <p class="text-muted">
+                View and manage organizational departments.
+            </p>
+        </div>
+
+        <a href="{% url 'department_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Add Department
+        </a>
+    </div>
+
+    <!-- Department Count -->
+    <div class="mb-3">
+        <span class="badge bg-primary fs-6">
+            <i class="bi bi-building me-1"></i>
+            {{ departments|length }} Departments
+        </span>
+    </div>
+
+    <!-- Department Table -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Registered Departments
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Department Code</th>
+                            <th>Department Name</th>
+                            <th>Location</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for department in departments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>{{ department.department_code }}</td>
+
+                            <td>
+                                <i class="bi bi-building me-1"></i>
+                                {{ department.name }}
+                            </td>
+
+                            <td>{{ department.location }}</td>
+                            <td>{{ department.phone }}</td>
+                            <td>{{ department.email }}</td>
+
+                            <td>
+                                <a href="{% url 'department_edit' department.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    Edit
+                                </a>
+
+                                <a href="{% url 'department_delete' department.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash3 me-1"></i>
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="bi bi-building display-5 text-muted"></i>
+                                <p class="mt-2">
+                                    No departments have been registered yet.
+                                </p>
+
+                                <a href="{% url 'department_create' %}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Register First Department
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
