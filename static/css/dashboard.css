@@ -221,6 +221,116 @@ a {
     right: 1px;
 }
 
+.page-search-button {
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+button,
+.btn,
+a.btn {
+    transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+button:not(:disabled):hover,
+.btn:not(:disabled):hover {
+    filter: brightness(.96);
+}
+
+button:not(:disabled):active,
+.btn:not(:disabled):active {
+    transform: translateY(1px) scale(.98);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+.interactive-icon:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, .45);
+    outline-offset: 2px;
+}
+
+.icon-action {
+    transition: transform 140ms ease;
+}
+
+a:hover .icon-action,
+button:hover .icon-action {
+    transform: scale(1.12);
+}
+
+.interactive-icon {
+    cursor: pointer;
+    border-radius: 4px;
+    transition: transform 140ms ease, color 140ms ease;
+}
+
+.interactive-icon:hover {
+    color: var(--primary);
+    transform: scale(1.12);
+}
+
+.button-spinner {
+    display: inline-block;
+    width: .85em;
+    height: .85em;
+    margin-right: .3em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    vertical-align: -.08em;
+    animation: button-spin .7s linear infinite;
+}
+
+@keyframes button-spin {
+    to { transform: rotate(360deg); }
+}
+
+.app-notification-region {
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    pointer-events: none;
+}
+
+.app-notification {
+    position: fixed;
+    z-index: 2001;
+    padding: .85rem 1rem;
+    border-left: 4px solid #0d6efd;
+    border-radius: .5rem;
+    max-width: calc(100vw - 1.5rem);
+    color: #172033;
+    background: #fff;
+    box-shadow: 0 .5rem 1.5rem rgba(15, 23, 42, .18);
+    opacity: 0;
+    pointer-events: auto;
+    transform: translate(-50%, -100%) scale(.98);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.app-notification.is-below { transform: translate(-50%, 0) scale(.98); }
+
+.app-notification.is-visible {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+}
+
+.app-notification.is-below.is-visible { transform: translate(-50%, 0) scale(1); }
+.app-notification-success { border-left-color: #198754; }
+.app-notification-error { border-left-color: #dc3545; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
 .user-profile {
     display: flex;
     align-items: center;

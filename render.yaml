@@ -17,6 +17,8 @@
           property: connectionString
       - key: ALLOWED_HOSTS
         value: .onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://*.onrender.com
 
 databases:
   - name: asset-management-db

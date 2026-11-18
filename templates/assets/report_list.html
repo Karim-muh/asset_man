@@ -264,9 +264,10 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'asset_delete' asset.id %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
+                                <form method="post" action="{% url 'asset_delete' asset.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                                </form>
                             </td>
 
                         </tr>
@@ -341,9 +342,10 @@
                             <td>{{ disposal.method }}</td>
                             <td>{{ disposal.disposal_value }}</td>
                             <td>
-                                <a href="{% url 'disposal_delete' disposal.id %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
+                                <form method="post" action="{% url 'disposal_delete' disposal.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                                </form>
                             </td>   
                         </tr>
 

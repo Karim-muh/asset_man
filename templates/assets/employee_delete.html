@@ -65,15 +65,15 @@
 
                 <tr>
                     <th>Department</th>
-                    <td>{{ employee.department.name }}</td>
+                    <td>{% if employee.department %}{{ employee.department.name }}{% else %}Unassigned{% endif %}</td>
                 </tr>
 
             </table>
 
             <div class="alert alert-warning">
                 <i class="bi bi-exclamation-circle me-2"></i>
-                This action cannot be undone. Employees linked to
-                requisitions, distributions or disposals cannot be deleted.
+                This action cannot be undone. The employee's linked requisitions,
+                distributions and disposal approvals will also be deleted.
             </div>
 
             <form method="POST">

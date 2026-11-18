@@ -61,13 +61,26 @@ class Department(models.Model):
 
 
 class Employee(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='employee_record',
+        null=True,
+        blank=True,
+    )
     employee_number = models.CharField(max_length=20, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=20)
-    job_title = models.CharField(max_length=100)
-    department = models.ForeignKey(Department,on_delete=models.PROTECT,related_name='employees')
+    phone = models.CharField(max_length=20, blank=True, default='')
+    job_title = models.CharField(max_length=100, blank=True, default='')
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name='employees',
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -96,7 +109,7 @@ class Asset(models.Model):
     serial_number = models.CharField(max_length=100, unique=True)
     acquisition_date = models.DateField()
     acquisition_cost = models.DecimalField(max_digits=12,decimal_places=2)
-    department = models.ForeignKey(Department,on_delete=models.PROTECT,related_name='assets')
+    department = models.ForeignKey(Department,on_delete=models.CASCADE,related_name='assets')
     status = models.CharField(max_length=30,choices=STATUS_CHOICES,default='Available')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -114,7 +127,7 @@ class Requisition(models.Model):
     ]
 
     requisition_number = models.CharField(max_length=30, unique=True)
-    employee = models.ForeignKey(Employee,on_delete=models.PROTECT,related_name='requisitions')
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name='requisitions')
     asset_category = models.CharField(max_length=50)
     quantity = models.PositiveIntegerField(default=1)
     date_requested = models.DateField()
@@ -126,8 +139,8 @@ class Requisition(models.Model):
 
 
 class Distribution(models.Model):
-    asset = models.ForeignKey(Asset,on_delete=models.PROTECT,related_name='distributions')
-    employee = models.ForeignKey(Employee,on_delete=models.PROTECT,related_name='distributions')
+    asset = models.ForeignKey(Asset,on_delete=models.CASCADE,related_name='distributions')
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE,related_name='distributions')
     date_issued = models.DateField()
     expected_return_date = models.DateField(null=True,blank=True)
     actual_return_date = models.DateField(null=True,blank=True)
@@ -147,11 +160,11 @@ class Disposal(models.Model):
         ('Destruction', 'Destruction'),
     ]
 
-    asset = models.OneToOneField(Asset,on_delete=models.PROTECT,related_name='disposal')
+    asset = models.OneToOneField(Asset,on_delete=models.CASCADE,related_name='disposal')
     date_disposed = models.DateField()
     reason = models.TextField()
     method = models.CharField(max_length=30,choices=METHOD_CHOICES)
-    approved_by = models.ForeignKey(Employee,on_delete=models.PROTECT)
+    approved_by = models.ForeignKey(Employee,on_delete=models.CASCADE)
     disposal_value = models.DecimalField(max_digits=12,decimal_places=2,default=0)
     notes = models.TextField(blank=True)
 

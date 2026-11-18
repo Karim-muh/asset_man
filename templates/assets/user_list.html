@@ -74,15 +74,9 @@
                             <td>{{ profile.user.email }}</td>
 
                             <td>
-                                {% if profile.role == 'ADMIN' %}
-                                    <span class="badge bg-primary">
-                                        Administrator
-                                    </span>
-                                {% else %}
-                                    <span class="badge bg-secondary">
-                                        Staff
-                                    </span>
-                                {% endif %}
+                                <span class="badge {% if profile.role == 'ADMIN' %}bg-primary{% elif profile.role == 'STAFF' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ profile.get_role_display }}
+                                </span>
                             </td>
 
                             <td>
@@ -109,13 +103,12 @@
                                     Edit
                                 </a>
 
-                                {% if profile.role != 'ADMIN' %}
-                                    <a href="{% url 'user_delete' profile.id %}"
-                                    class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash3 me-1"></i>
-                                        Delete
-                                    </a>
-                                {% endif %}
+                                <form method="post" action="{% url 'user_delete' profile.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash3 me-1"></i> Delete
+                                    </button>
+                                </form>
                             </td>
                         </tr>
 

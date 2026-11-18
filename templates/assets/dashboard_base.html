@@ -82,19 +82,21 @@
 
             <p class="menu-heading">SYSTEM</p>
 
-            <a href="{% url 'user_list' %}" class="menu-link">
-                <i class="bi bi-person-gear"></i>
-                <span>User Management</span>
-            </a>
+            {% if request.user.is_superuser or request.user.is_staff or request.user.profile.role == 'ADMIN' and request.user.profile.is_approved %}
+                <a href="{% url 'user_list' %}" class="menu-link">
+                    <i class="bi bi-person-gear"></i>
+                    <span>User Management</span>
+                </a>
 
-            <a href="{% url 'report_list' %}" class="menu-link">
-                <i class="bi bi-bar-chart-line"></i>
-                <span>Reports</span>
-            </a>
+                <a href="{% url 'report_list' %}" class="menu-link">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            {% endif %}
 
             <!-- Settings: Administrator Only -->
             {% if request.user.is_authenticated %}
-                {% if request.user.profile.role == 'ADMIN' %}
+                {% if request.user.is_superuser or request.user.is_staff or request.user.profile.role == 'ADMIN' and request.user.profile.is_approved %}
                     <a href="{% url 'settings' %}" class="menu-link">
                         <i class="bi bi-gear"></i>
                         <span>Settings</span>
@@ -112,20 +114,22 @@
         <!-- Top Navigation -->
         <header class="topbar">
 
-            <button class="sidebar-toggle" id="sidebarToggle">
-                <i class="bi bi-list"></i>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle navigation" title="Toggle navigation">
+                <i class="bi bi-list" aria-hidden="true"></i>
             </button>
 
-            <div class="topbar-search">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Search assets, employees...">
+            <div class="topbar-search" role="search">
+                <button type="button" id="pageSearchButton" class="page-search-button" aria-label="Search this page" title="Search this page">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
+                <input type="search" id="pageSearchInput" aria-label="Search visible records" placeholder="Search this page...">
             </div>
 
             <div class="topbar-actions">
 
-                <button class="notification-btn">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-dot"></span>
+                <button class="notification-btn" id="notificationButton" type="button" aria-label="Show notifications" title="Show notifications">
+                    <i class="bi bi-bell" aria-hidden="true"></i>
+                    {% if messages %}<span class="notification-dot" aria-hidden="true"></span>{% endif %}
                 </button>
 
                 <div class="user-profile">
@@ -183,7 +187,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Custom Dashboard JavaScript -->
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+<script src="{% static 'css/js/interactions.js' %}"></script>
 
 {% block extra_js %}{% endblock %}
 

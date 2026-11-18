@@ -4,8 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from .models import UserProfile,Asset, Requisition, Distribution, Disposal, Department, Employee
-from .forms import LoginForm, RegistrationForm, UserProfileForm, AssetForm, RequisitionForm, DistributionForm, DisposalForm, DepartmentForm, EmployeeForm
+from .forms import LoginForm, RegistrationForm, UserProfileForm, AssetForm, RequisitionForm, DistributionForm, DisposalForm, DepartmentForm, EmployeeForm, EmployeeCreateForm
 
 def is_admin_user(user):
     """Check whether the user is an administrator."""
@@ -18,13 +19,17 @@ def is_admin_user(user):
 
 
 def is_approved_user(user):
-    """Check whether the user has an approved account."""
+    """Check whether the user has an approved account in any supported role."""
     if user.is_superuser or user.is_staff:
         return True
 
     profile = UserProfile.objects.filter(user=user).first()
 
-    return bool(profile and profile.is_approved and profile.role in ['ADMIN', 'STAFF'])
+    return bool(
+        profile
+        and (profile.is_approved or profile.staff_status == 'APPROVED')
+        and profile.role in ['USER', 'STAFF', 'ADMIN']
+    )
 
 
 def user_login(request):
@@ -66,28 +71,27 @@ def user_logout(request):
 
 
 def user_register(request):
-
     if request.method == 'POST':
-
         form = RegistrationForm(request.POST)
-
         if form.is_valid():
-
-            # Save the new user account
-            user = form.save()
-
-            # Create the user's profile
-            UserProfile.objects.create(user=user,role='STAFF',is_approved=False)
-            messages.success(request,'Registration successful! Your account is awaiting administrator approval.')
+            with transaction.atomic():
+                user = form.save()
+                UserProfile.objects.create(
+                    user=user,
+                    role='USER',
+                    is_approved=False,
+                    staff_status='PENDING',
+                )
+            messages.success(
+                request,
+                'Your user account was created and is awaiting administrator approval. It has not been added as an employee.',
+            )
             return redirect('login')
-
-        else:
-            messages.error(request,'Please correct the errors in the registration form.')
-
+        messages.error(request, 'Please correct the errors in the registration form.')
     else:
         form = RegistrationForm()
 
-    return render(request,'assets/register.html',{'form': form})
+    return render(request, 'assets/register.html', {'form': form})
 
 
 
@@ -120,6 +124,7 @@ def dashboard(request):
         'assigned_assets': assigned_assets,
         'total_employees': total_employees,
         'recent_assets': recent_assets,
+        'can_delete_records': is_admin_user(request.user),
     }
 
     return render(request,'assets/dashboard.html',context)
@@ -180,7 +185,9 @@ def user_edit(request, profile_id):
 
         if form.is_valid():
 
-            form.save()
+            profile = form.save()
+            profile.staff_status = 'APPROVED' if profile.is_approved else 'PENDING'
+            profile.save(update_fields=['staff_status'])
 
             messages.success(request,'User profile updated successfully.')
 
@@ -202,18 +209,11 @@ def user_edit(request, profile_id):
 
 @login_required(login_url='login')
 def user_delete(request, profile_id):
-
-    # Only administrators can delete users
     if not is_admin_user(request.user):
-        messages.error(request,'You do not have permission to delete users.')
+        messages.error(request, 'Only administrators can delete user accounts.')
         return redirect('dashboard')
 
     profile = get_object_or_404(UserProfile,id=profile_id)
-
-    # Protect administrator accounts
-    if profile.role == 'ADMIN' or profile.user.is_superuser:
-        messages.error(request,'Administrator accounts cannot be deleted here.')
-        return redirect('user_list')
 
     if request.method == 'POST':
 
@@ -232,7 +232,7 @@ def user_delete(request, profile_id):
 @login_required(login_url='login')
 def department_list(request):
 
-    # Only administrators can manage departments
+    # Approved users can view and maintain department records.
     if not is_approved_user(request.user):
         messages.error(request, 'Your account is not approved.')
         return redirect('login')
@@ -242,6 +242,7 @@ def department_list(request):
 
     context = {
         'departments': departments,
+        'can_delete_records': is_admin_user(request.user),
     }
 
     return render(request,'assets/department_list.html',context)
@@ -249,9 +250,8 @@ def department_list(request):
 @login_required(login_url='login')
 def department_create(request):
 
-    # Only administrators can register departments
-    if not is_admin_user(request.user):
-        messages.error(request,'You do not have permission to register departments.')
+    if not is_approved_user(request.user):
+        messages.error(request,'Your account must be approved to register departments.')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -282,9 +282,8 @@ def department_create(request):
 @login_required(login_url='login')
 def department_edit(request, department_id):
 
-    # Only administrators can edit departments
-    if not is_admin_user(request.user):
-        messages.error(request,'You do not have permission to edit departments.')
+    if not is_approved_user(request.user):
+        messages.error(request,'Your account must be approved to edit departments.')
         return redirect('dashboard')
 
     department = get_object_or_404(Department,id=department_id)
@@ -317,22 +316,13 @@ def department_edit(request, department_id):
 
 @login_required(login_url='login')
 def department_delete(request, department_id):
-
-    # Only administrators can delete departments
     if not is_admin_user(request.user):
-        messages.error(request,'You do not have permission to delete departments.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete departments.')
+        return redirect('department_list')
 
     department = get_object_or_404(Department,id=department_id)
 
     if request.method == 'POST':
-
-        # Prevent deletion of departments with employees or assets
-        if department.employees.exists() or department.assets.exists():
-
-            messages.error(request,'This department cannot be deleted because it has employees or assets assigned to it.')
-
-            return redirect('department_list')
 
         department_name = department.name
 
@@ -348,17 +338,19 @@ def department_delete(request, department_id):
 @login_required(login_url='login')
 def employee_list(request):
 
-    # Only administrators can manage employees
+    # Approved users can view employee records; registration stays administrator-only.
     if not is_approved_user(request.user):
         messages.error(request, 'Your account is not approved.')
         return redirect('login')
 
     # Retrieve employees and their departments
-    employees = Employee.objects.select_related('department').all().order_by('first_name')
+    employees = Employee.objects.select_related('department', 'user').all().order_by('first_name')
 
     context = {
         'employees': employees,
         'can_manage_employees': is_admin_user(request.user),
+        'can_edit_employees': is_approved_user(request.user),
+        'can_delete_records': is_admin_user(request.user),
     }
 
     return render(request,'assets/employee_list.html',context)
@@ -373,13 +365,28 @@ def employee_create(request):
 
     if request.method == 'POST':
 
-        form = EmployeeForm(request.POST)
+        form = EmployeeCreateForm(request.POST)
 
         if form.is_valid():
+            with transaction.atomic():
+                user = get_user_model().objects.create_user(
+                    username=form.cleaned_data['username'],
+                    email=form.cleaned_data['email'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    password=form.cleaned_data['password1'],
+                )
+                UserProfile.objects.create(
+                    user=user,
+                    role='STAFF',
+                    is_approved=True,
+                    staff_status='APPROVED',
+                )
+                employee = form.save(commit=False)
+                employee.user = user
+                employee.save()
 
-            form.save()
-
-            messages.success(request,'Employee registered successfully.')
+            messages.success(request,'Employee and login account created successfully.')
 
             return redirect('employee_list')
 
@@ -387,7 +394,7 @@ def employee_create(request):
             messages.error(request,'Please correct the errors in the employee form.')
 
     else:
-        form = EmployeeForm()
+        form = EmployeeCreateForm()
 
     context = {
         'form': form,
@@ -399,9 +406,8 @@ def employee_create(request):
 @login_required(login_url='login')
 def employee_edit(request, employee_id):
 
-    # Only administrators can edit employees
-    if not is_admin_user(request.user):
-        messages.error(request,'You do not have permission to edit employees.')
+    if not is_approved_user(request.user):
+        messages.error(request,'Your account must be approved to edit employees.')
         return redirect('dashboard')
 
     employee = get_object_or_404(Employee,id=employee_id)
@@ -412,7 +418,12 @@ def employee_edit(request, employee_id):
 
         if form.is_valid():
 
-            form.save()
+            employee = form.save()
+            if employee.user:
+                employee.user.first_name = employee.first_name
+                employee.user.last_name = employee.last_name
+                employee.user.email = employee.email
+                employee.user.save(update_fields=['first_name', 'last_name', 'email'])
 
             messages.success(request,'Employee details updated successfully.')
 
@@ -435,46 +446,13 @@ def employee_edit(request, employee_id):
 
 @login_required(login_url='login')
 def employee_delete(request, employee_id):
-
-    # Only administrators can delete employees
     if not is_admin_user(request.user):
-        messages.error(
-            request,
-            'You do not have permission to delete employees.'
-        )
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete employees.')
+        return redirect('employee_list')
 
     employee = get_object_or_404(Employee, id=employee_id)
 
     if request.method == 'POST':
-
-        # Check whether the employee is connected to other records
-        has_requisitions = employee.requisitions.exists()
-        has_distributions = employee.distributions.exists()
-        has_disposals = Disposal.objects.filter(
-            approved_by=employee
-        ).exists()
-
-        if has_requisitions:
-            messages.error(
-                request,
-                'Employee cannot be deleted because they have existing requisition records.'
-            )
-            return redirect('employee_list')
-
-        if has_distributions:
-            messages.error(
-                request,
-                'Employee cannot be deleted because they have asset distribution records.'
-            )
-            return redirect('employee_list')
-
-        if has_disposals:
-            messages.error(
-                request,
-                'Employee cannot be deleted because they are linked to asset disposal records.'
-            )
-            return redirect('employee_list')
 
         employee_name = f'{employee.first_name} {employee.last_name}'
 
@@ -496,7 +474,7 @@ def employee_delete(request, employee_id):
 @login_required(login_url='login')
 def asset_list(request):
 
-    # Only administrators can manage assets
+    # Approved users can view and maintain asset records.
     if not is_approved_user(request.user):
         messages.error(request, 'Your account is not approved.')
         return redirect('login')
@@ -505,16 +483,16 @@ def asset_list(request):
     assets = Asset.objects.select_related('department').all().order_by('asset_name')
 
     context = {
-        'assets': assets
+        'assets': assets,
+        'can_delete_records': is_admin_user(request.user),
     }
 
     return render(request,'assets/asset_list.html',context)
 
 @login_required(login_url='login')
 def asset_create(request):
-    # Only administrators can register assets
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to register assets.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to register assets.')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -540,9 +518,8 @@ def asset_create(request):
 
 @login_required(login_url='login')
 def asset_edit(request, asset_id):
-    # Only administrators can edit assets
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to edit assets.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to edit assets.')
         return redirect('dashboard')
 
     asset = get_object_or_404(Asset, id=asset_id)
@@ -571,19 +548,13 @@ def asset_edit(request, asset_id):
 
 @login_required(login_url='login')
 def asset_delete(request, asset_id):
-    # Only administrators can delete assets
     if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to delete assets.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete assets.')
+        return redirect('asset_list')
 
     asset = get_object_or_404(Asset, id=asset_id)
 
     if request.method == 'POST':
-
-        # Protect assets linked to distribution or disposal records
-        if (asset.distributions.exists() or Disposal.objects.filter(asset=asset).exists()):
-            messages.error(request,'This asset cannot be deleted because it has distribution or disposal records.')
-            return redirect('asset_list')
 
         asset_name = asset.asset_name
         asset.delete()
@@ -603,12 +574,15 @@ def requisition_list(request):
 
     requisitions = Requisition.objects.select_related('employee').all().order_by('-date_requested')
 
-    return render(request,'assets/requisition_list.html',{'requisitions': requisitions})
+    return render(request,'assets/requisition_list.html',{
+        'requisitions': requisitions,
+        'can_delete_records': is_admin_user(request.user),
+    })
 
 
 @login_required(login_url='login')
 def requisition_create(request):
-    if not is_approved_user (request.user):
+    if not is_approved_user(request.user):
         messages.error(request, 'You do not have permission to create requisitions.')
         return redirect('dashboard')
 
@@ -634,8 +608,8 @@ def requisition_create(request):
 
 @login_required(login_url='login')
 def requisition_edit(request, requisition_id):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to edit requisitions.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to edit requisitions.')
         return redirect('dashboard')
 
     requisition = get_object_or_404(Requisition, id=requisition_id)
@@ -664,8 +638,8 @@ def requisition_edit(request, requisition_id):
 @login_required(login_url='login')
 def requisition_delete(request, requisition_id):
     if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to delete requisitions.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete requisitions.')
+        return redirect('requisition_list')
 
     requisition = get_object_or_404(Requisition, id=requisition_id)
 
@@ -688,13 +662,16 @@ def distribution_list(request):
 
     distributions = Distribution.objects.select_related('asset','employee').all().order_by('-date_issued')
 
-    return render(request,'assets/distribution_list.html',{'distributions': distributions})
+    return render(request,'assets/distribution_list.html',{
+        'distributions': distributions,
+        'can_delete_records': is_admin_user(request.user),
+    })
 
 
 @login_required(login_url='login')
 def distribution_create(request):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to issue assets.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to issue assets.')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -727,8 +704,8 @@ def distribution_create(request):
 
 @login_required(login_url='login')
 def distribution_edit(request, distribution_id):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to edit distributions.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to edit distributions.')
         return redirect('dashboard')
 
     distribution = get_object_or_404(Distribution, id=distribution_id)
@@ -759,19 +736,14 @@ def distribution_edit(request, distribution_id):
 @login_required(login_url='login')
 def distribution_delete(request, distribution_id):
     if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to delete distributions.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete distributions.')
+        return redirect('distribution_list')
 
     distribution = get_object_or_404(Distribution,id=distribution_id)
 
     if request.method == 'POST':
 
         asset = distribution.asset
-
-        # Do not delete a distribution that has already been returned
-        if distribution.actual_return_date:
-            messages.error(request,'This distribution cannot be deleted because the asset has already been returned.')
-            return redirect('distribution_list')
 
         distribution.delete()
 
@@ -794,13 +766,16 @@ def distribution_list(request):
         return redirect('login')
 
     distributions = Distribution.objects.select_related('asset','employee').all().order_by('-date_issued')
-    return render(request,'assets/distribution_list.html',{'distributions': distributions})
+    return render(request,'assets/distribution_list.html',{
+        'distributions': distributions,
+        'can_delete_records': is_admin_user(request.user),
+    })
 
 
 @login_required(login_url='login')
 def distribution_create(request):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to issue assets.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to issue assets.')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -833,8 +808,8 @@ def distribution_create(request):
 
 @login_required(login_url='login')
 def distribution_edit(request, distribution_id):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to edit distributions.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to edit distributions.')
         return redirect('dashboard')
 
     distribution = get_object_or_404(Distribution, id=distribution_id)
@@ -865,19 +840,14 @@ def distribution_edit(request, distribution_id):
 @login_required(login_url='login')
 def distribution_delete(request, distribution_id):
     if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to delete distributions.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete distributions.')
+        return redirect('distribution_list')
 
     distribution = get_object_or_404(Distribution,id=distribution_id)
 
     if request.method == 'POST':
 
         asset = distribution.asset
-
-        # Do not delete a distribution that has already been returned
-        if distribution.actual_return_date:
-            messages.error(request,'This distribution cannot be deleted because the asset has already been returned.')
-            return redirect('distribution_list')
 
         distribution.delete()
 
@@ -901,13 +871,16 @@ def disposal_list(request):
 
     disposals = Disposal.objects.select_related('asset','approved_by').all().order_by('-date_disposed')
 
-    return render(request,'assets/disposal_list.html',{'disposals': disposals})
+    return render(request,'assets/disposal_list.html',{
+        'disposals': disposals,
+        'can_delete_records': is_admin_user(request.user),
+    })
 
 
 @login_required(login_url='login')
 def disposal_create(request):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to register disposals.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to register disposals.')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -940,8 +913,8 @@ def disposal_create(request):
 
 @login_required(login_url='login')
 def disposal_edit(request, disposal_id):
-    if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to edit disposals.')
+    if not is_approved_user(request.user):
+        messages.error(request, 'Your account must be approved to edit disposals.')
         return redirect('dashboard')
 
     disposal = get_object_or_404(Disposal, id=disposal_id)
@@ -978,8 +951,8 @@ def disposal_edit(request, disposal_id):
 @login_required(login_url='login')
 def disposal_delete(request, disposal_id):
     if not is_admin_user(request.user):
-        messages.error(request, 'You do not have permission to delete disposals.')
-        return redirect('dashboard')
+        messages.error(request, 'Only administrators can delete disposals.')
+        return redirect('disposal_list')
 
     disposal = get_object_or_404(Disposal, id=disposal_id)
 
@@ -1004,10 +977,9 @@ def disposal_delete(request, disposal_id):
 @login_required(login_url='login')
 def report_list(request):
 
-    # Only administrators can access reports
-    if not is_approved_user(request.user):
-        messages.error(request, 'Your account is not approved.')
-        return redirect('login')
+    if not is_admin_user(request.user):
+        messages.error(request, 'Only administrators can access reports.')
+        return redirect('dashboard')
 
     # Retrieve filter values
     status = request.GET.get('status', '')

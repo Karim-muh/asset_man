@@ -94,12 +94,9 @@
             </thead>
 
             <tbody>
-
-                <td>{{ forloop.counter }}</td>
-
                 {% for asset in recent_assets %}
                 <tr>
-                    <td>{{asset.id  }}</td>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ asset.asset_name }}</td>
                     <td>{{ asset.asset_tag }}</td>
                     <td>{{ asset.category }}</td>
@@ -136,18 +133,21 @@
                             <i class="bi bi-pencil-square"></i>Edit
                         </a>
 
-                        <a href="{% url 'asset_delete' asset.id %}"
-                            class="btn btn-sm btn-outline-danger"
-                            title="Delete">
-                            <i class="bi bi-trash3"></i>Delete
-                        </a>
+                        {% if can_delete_records %}
+                            <form method="post" action="{% url 'asset_delete' asset.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash3"></i> Delete
+                                </button>
+                            </form>
+                        {% endif %}
                     </td>
 
                 </tr>
 
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-4">
+                    <td colspan="7" class="text-center py-4">
                         No assets have been registered yet.
                     </td>
                 </tr>

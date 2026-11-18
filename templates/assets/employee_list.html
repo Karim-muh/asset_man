@@ -57,11 +57,12 @@
                             <th>Employee Number</th>
                             <th>Full Name</th>
                             <th>Email</th>
+                            <th>Login Username</th>
                             <th>Phone</th>
                             <th>Job Title</th>
                             <th>Department</th>
                             
-                            {% if can_manage_employees %}
+                            {% if can_edit_employees %}
                             <th>Actions</th>
                             {% endif %} 
                         </tr>
@@ -85,17 +86,19 @@
 
                             <td>{{ employee.email }}</td>
 
+                            <td>{% if employee.user %}{{ employee.user.username }}{% else %}<span class="text-muted">No account linked</span>{% endif %}</td>
+
                             <td>{{ employee.phone }}</td>
 
                             <td>{{ employee.job_title }}</td>
 
                             <td>
                                 <span class="badge bg-info text-dark">
-                                    {{ employee.department.name }}
+                                    {% if employee.department %}{{ employee.department.name }}{% else %}<span class="text-muted">Unassigned</span>{% endif %}
                                 </span>
                             </td>
 
-                            {% if can_manage_employees %}
+                            {% if can_edit_employees %}
                             <td>
                             
                                 <a href="{% url 'employee_edit' employee.id %}"
@@ -104,10 +107,14 @@
                                     Edit
                                 </a>
 
-                                <a href="{% url 'employee_delete' employee.id %}"
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash3 me-1"></i> Delete
-                                </a>
+                                {% if can_delete_records %}
+                                    <form method="post" action="{% url 'employee_delete' employee.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash3 me-1"></i> Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </td>
 
                             {% endif %}
@@ -116,7 +123,7 @@
                         {% empty %}
 
                         <tr>
-                            <td colspan="{% if can_manage_employees %}8{% else %}7{% endif %}" 
+                            <td colspan="{% if can_edit_employees %}9{% else %}8{% endif %}"
                             class="text-center py-4">
                                 <i class="bi bi-people display-5 text-muted"></i>
 

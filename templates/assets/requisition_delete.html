@@ -1,8 +1,7 @@
 
 {% extends 'assets/dashboard_base.html' %}
-{% load crispy_forms_tags %}
 
-{% block title %}{{ page_title }} | Asset Management System{% endblock %}
+{% block title %}Delete Requisition | Asset Management System{% endblock %}
 
 {% block content %}
 
@@ -10,20 +9,14 @@
 
     <div class="mb-4">
         <h2>
-            <i class="bi bi-clipboard-plus me-2"></i>
-            {{ page_title }}
+            <i class="bi bi-clipboard-x me-2"></i>
+            Delete Requisition
         </h2>
-        <p class="text-muted">Enter the employee's asset request details.</p>
+        <p class="text-muted">Review the request before deleting it.</p>
     </div>
 
     <div class="card shadow-sm border-0">
 
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">
-                <i class="bi bi-file-earmark-text me-2"></i>
-                Requisition Information
-            </h5>
-        </div>
         <div class="card-header bg-danger text-white py-3">
             <h5 class="mb-0">
                 <i class="bi bi-exclamation-triangle me-2"></i>
@@ -33,10 +26,21 @@
 
         <div class="card-body">
 
+            <div class="alert alert-warning" role="alert">
+                This will permanently delete requisition <strong>{{ requisition.requisition_number }}</strong>.
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Employee</dt>
+                <dd class="col-sm-9">{{ requisition.employee }}</dd>
+                <dt class="col-sm-3">Asset category</dt>
+                <dd class="col-sm-9">{{ requisition.asset_category }}</dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">{{ requisition.status }}</dd>
+            </dl>
+
             <form method="POST">
                 {% csrf_token %}
-
-                {{ form|crispy }}
 
                 <div class="mt-4">
 

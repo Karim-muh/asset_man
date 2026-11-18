@@ -15,7 +15,11 @@
         </h2>
 
         <p class="text-muted">
-            Enter the employee details below.
+            {% if page_title == 'Register Employee' %}
+                Enter the employee details and create the username and password they will use to sign in.
+            {% else %}
+                Update the employee details below. Linked login account details are kept in sync.
+            {% endif %}
         </p>
     </div>
 

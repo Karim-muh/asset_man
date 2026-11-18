@@ -83,11 +83,14 @@
                                     Edit
                                 </a>
 
-                                <a href="{% url 'department_delete' department.id %}"
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash3 me-1"></i>
-                                    Delete
-                                </a>
+                                {% if can_delete_records %}
+                                    <form method="post" action="{% url 'department_delete' department.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash3 me-1"></i> Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </td>
                         </tr>
 
