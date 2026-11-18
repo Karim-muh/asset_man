@@ -1,26 +1,26 @@
-
 {% extends 'assets/base.html' %}
-{% load crispy_forms_tags %}
-
 {% block content %}
-
-<div class="login-container">
-
-    <h2>Welcome Back</h2>
-    <p>Sign in to access the Asset Management System.</p>
-
-    <form method="POST" action="{% url 'login' %}">
-        {% csrf_token %}
-
-        {{form|crispy}}
-
-        <button type="submit">Login</button>
-
-    </form>
-
-    <p>Don't have a user account? <a href="{% url 'register' %}">Register here</a>.</p>
-    <p>Employee login accounts are created by an administrator through Employee Management.</p>
-
+<div class="login-page">
+    <section class="login-container">
+        <h2>Welcome Back</h2>
+        <p>Sign in to access the Asset Management System.</p>
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="login-field">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {{ form.username.errors }}
+            </div>
+            <div class="login-field">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+                {{ form.password.errors }}
+            </div>
+            {{ form.non_field_errors }}
+            <button type="submit">Login</button>
+        </form>
+        <p class="register-prompt">Don't have a user account? <a href="{% url 'register' %}">Register here</a>.</p>
+    </section>
 </div>
-
 {% endblock %}

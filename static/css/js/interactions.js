@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setTimeout(() => {
             toast.classList.remove('is-visible');
             window.setTimeout(() => toast.remove(), 250);
-        }, 3600);
+        }, 1800);
     }
 
     window.showAppNotification = notify;

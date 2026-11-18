@@ -248,3 +248,30 @@ footer {
     padding: 30px 20px;
   }
 }
+
+/* COLORFUL LOGIN PAGE */
+.login-page {
+  min-height: calc(100vh - 125px);
+  padding: 46px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 12% 18%, #fff4dd 0, transparent 28%), linear-gradient(135deg, #eef7ff 0%, #e7f1ff 48%, #f1edff 100%);
+}
+.login-container { width: 100%; max-width: 430px; margin: 0 auto; padding: 38px 42px; border: 1px solid rgba(255,255,255,.85); border-radius: 24px; box-shadow: 0 24px 65px rgba(43, 78, 119, .17); }
+.login-container h2 { margin-bottom: 12px; color: #152d4d; }
+.login-container > p:first-of-type { margin: 0 0 22px; line-height: 1.5; }
+.login-container label { color: #243b59; font-size: 14px; font-weight: 600; }
+.login-container .login-field { margin-bottom: 13px; }
+.login-container .login-field ul.errorlist,
+.login-container form > ul.errorlist { margin: 5px 0 10px; padding-left: 18px; color: #b42318; font-size: 13px; }
+.login-container input { margin-top: 6px; border-color: #cbd9e8; }
+.login-container input:focus { border-color: #16876a; box-shadow: 0 0 0 3px rgba(22, 135, 106, .13); }
+.login-container button { background: linear-gradient(100deg, #0875ed, #1769d2); box-shadow: 0 8px 18px rgba(8, 117, 237, .2); }
+.login-container button:hover { background: linear-gradient(100deg, #0765ce, #1259b6); }
+.login-container .register-prompt { margin-top: 22px; line-height: 1.5; }
+.login-container a { color: #0875ed; font-weight: 600; }
+@media (max-width: 576px) {
+  .login-container { width: auto; max-width: 430px; margin: 0 auto; padding: 30px 24px; }
+}
