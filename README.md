@@ -28,6 +28,8 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 ## Deploy on Render
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Karim-muh/asset_man)
+
 This repository includes a `render.yaml` blueprint for a Django web service and PostgreSQL database. In Render, create a new Blueprint instance from the GitHub repository and apply the generated plan. The blueprint supplies `DATABASE_URL`, a generated `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, and `CSRF_TRUSTED_ORIGINS`.
 
 The service runs migrations and collects static files during build, then serves Django through Gunicorn. Create a Django superuser with a one-off shell or Render shell after the first deployment.
